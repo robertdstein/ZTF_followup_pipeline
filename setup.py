@@ -29,7 +29,7 @@ setuptools.setup(
         "ampel-photometry == 0.7.1",
         "ampel-ztf == 0.7.3",
         "astrobject == 0.8.6",
-        "astropy == 4.2.1",
+        "astropy == 4.3.1",
         "astropy_healpix == 0.6",
         "backoff == 1.11.1",
         "bs4 == 0.0.1",
