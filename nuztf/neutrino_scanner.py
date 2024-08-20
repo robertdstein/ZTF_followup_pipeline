@@ -25,6 +25,7 @@ class NeutrinoScanner(BaseScanner):
         cone_nside: int = 128,
         t_precursor: float = None,
         config: dict = None,
+        output_nside: int = 1024,
     ):
         self.logger = logging.getLogger(__name__)
 
@@ -87,6 +88,7 @@ class NeutrinoScanner(BaseScanner):
             t_min=nu_time,
             run_config=self.config,
             cone_nside=cone_nside,
+            output_nside=output_nside,
         )
         self.prob_threshold = 0.9
         self.rectangular_area = (
@@ -150,7 +152,8 @@ class NeutrinoScanner(BaseScanner):
         # Require 2 detections separated by 15 mins
         if (endhist - starthist) < 0.01:
             self.logger.debug(
-                f"❌ {ztf_id}: Does have 2 detections, but these are not separated by >15 mins (delta t = {(endhist-starthist)*1440:.0f} min)"
+                f"❌ {ztf_id}: Does have 2 detections, but these are not separated by "
+                f">15 mins (delta t = {(endhist-starthist)*1440:.0f} min)"
             )
             return False
 
@@ -158,7 +161,10 @@ class NeutrinoScanner(BaseScanner):
         return True
 
     def filter_f_history(self, res: dict):
-        """Filter based on 2 detection requirement and probability contour requirement"""
+        """
+        Filter based on 2 detection requirement
+        and probability contour requirement
+        """
 
         ztf_id = res["objectId"]
 
@@ -213,9 +219,15 @@ class NeutrinoScanner(BaseScanner):
 
         return np.logical_and(in_ra, in_dec)
 
-    def unpack_skymap(self, skymap=None, output_nside: None | int = None):
-        """ """
-        output_nside = 1024
+    def unpack_skymap(self, output_nside: None | int = None):
+        """
+        Unpack the skymap and return the pixel coordinates and probabilities
+
+        :param output_nside: Nside of the output map
+        :return: Map coordinates, pixel numbers, output nside,
+        map probabilities, data, total pixel area, key
+        """
+        output_nside = 2048 if output_nside is None else output_nside
 
         map_coords = []
         pixel_nos = []
@@ -223,7 +235,8 @@ class NeutrinoScanner(BaseScanner):
         center_ra = np.radians(np.mean([self.ra_max, self.ra_min]))
         center_dec = np.radians(np.mean([self.dec_max, self.dec_min]))
         # Take the larger of the two sides and convert to radians
-        # To make sure to include all pixels until the edge of the rectangle, we have to devide by sqrt(2)
+        # To make sure to include all pixels until the edge of the rectangle,
+        # we have to devide by sqrt(2)
         # (not 2 as previously done here!)
         rad = np.radians(
             max(self.ra_max - self.ra_min, self.dec_max - self.dec_min)

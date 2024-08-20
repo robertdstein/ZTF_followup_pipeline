@@ -53,10 +53,12 @@ class BaseScanner:
         filter_class=DecentFilter,
         cone_nside=64,
         cones_to_scan=None,
+        output_nside: None | int = None,
         logger=None,
     ):
         self.cone_nside = cone_nside
         self.t_min = t_min
+
         (
             self.map_coords,
             self.pixel_nos,
@@ -65,7 +67,7 @@ class BaseScanner:
             self.data,
             self.total_pixel_area,
             self.key,
-        ) = self.unpack_skymap()
+        ) = self.unpack_skymap(output_nside)
 
         if not hasattr(self, "prob_threshold"):
             self.prob_threshold = None
@@ -141,7 +143,7 @@ class BaseScanner:
         cache_dir.mkdir(exist_ok=True, parents=True)
         return cache_dir
 
-    def unpack_skymap(self):
+    def unpack_skymap(self, output_nside: None | int = None):
         raise NotImplementedError
 
     @staticmethod
@@ -846,8 +848,21 @@ class BaseScanner:
         return text
 
     def calculate_overlap_with_observations(
-        self, first_det_window_days=3.0, min_sep=0.01, fields=None
+        self,
+        first_det_window_days: float = 3.0,
+        min_sep: float = 0.01,
+        fields: list[int] | None = None,
+        backend: str = "best",
     ):
+        """
+        Calculate the overlap of the skymap with observations
+
+        :param first_det_window_days: First detection window in days
+        :param min_sep: Minimum separation between detections in days
+        :param fields: Fields to consider (if None, all fields are considered)
+        :param backend: Backend to use for coverage calculation
+        :return:
+        """
 
         if fields is not None:
             new = []
@@ -874,7 +889,9 @@ class BaseScanner:
             data = pd.concat(new)
 
         else:
-            mns = get_obs_summary(t_min=self.t_min, max_days=first_det_window_days)
+            mns = get_obs_summary(
+                t_min=self.t_min, max_days=first_det_window_days, backend=backend
+            )
 
             if mns is None:
                 return None, None, None
@@ -882,23 +899,13 @@ class BaseScanner:
             data = mns.data.copy()
 
         mask = data["status"] == 0
+
         self.logger.info(
             f"Found {mask.sum()} successful observations in the depot, "
             f"corresponding to {np.mean(mask)*100:.2f}% of the total."
         )
 
         self.logger.info("Unpacking observations")
-
-        if self.nside > 256:
-            (
-                self.map_coords,
-                self.pixel_nos,
-                self.nside,
-                self.map_probs,
-                self.data,
-                self.total_pixel_area,
-                self.key,
-            ) = self.unpack_skymap(output_nside=256)
 
         pix_map = dict()
         pix_obs_times = dict()
@@ -1014,10 +1021,7 @@ class BaseScanner:
         )
 
     def plot_overlap_with_observations(
-        self,
-        first_det_window_days=None,
-        min_sep=0.01,
-        fields=None,
+        self, first_det_window_days=None, min_sep=0.01, fields=None, backend="best"
     ):
         """
         Function to plot the overlap of the field with observations.
@@ -1025,6 +1029,7 @@ class BaseScanner:
         :param first_det_window_days: Window of time in days to consider for the first detection.
         :param min_sep: Minimum separation between observations to consider them as separate.
         :param fields: Fields to consider.
+        :param backend: Backend to use for coverage calculation
 
         """
 
@@ -1036,6 +1041,7 @@ class BaseScanner:
             first_det_window_days=first_det_window_days,
             min_sep=min_sep,
             fields=fields,
+            backend=backend,
         )
 
         if coverage_df is None:

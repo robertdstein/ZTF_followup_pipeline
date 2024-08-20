@@ -34,6 +34,8 @@ def find_gcn_no(base_nu_name: str):
     # hard code missing entries
     if base_nu_name == "IC220405B":
         return 31839
+    elif base_nu_name == "IC231004A":
+        return 34798
 
     querystr = (
         '{ allEventCard( name: "'

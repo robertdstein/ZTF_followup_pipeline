@@ -14,8 +14,11 @@ SKYMAP_DIR = NUZTF_OUTPUT_DIR / "skymaps"
 SKYMAP_DIR.mkdir(exist_ok=True, parents=True)
 
 RESULTS_DIR = NUZTF_OUTPUT_DIR / "results"
+RESULTS_DIR.mkdir(exist_ok=True, parents=True)
 CACHE_DIR = NUZTF_OUTPUT_DIR / "cache"
+CACHE_DIR.mkdir(exist_ok=True, parents=True)
 BASE_CANDIDATE_DIR = CACHE_DIR / "candidates"
+BASE_CANDIDATE_DIR.mkdir(exist_ok=True, parents=True)
 
 CROSSMATCH_CACHE = CACHE_DIR / "crossmatch"
 CROSSMATCH_CACHE.mkdir(exist_ok=True, parents=True)
