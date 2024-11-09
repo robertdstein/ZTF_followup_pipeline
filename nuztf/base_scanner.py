@@ -937,12 +937,12 @@ class BaseScanner:
                 )
 
         npix = hp.nside2npix(self.nside)
-        theta, phi = hp.pix2ang(self.nside, np.arange(npix), nest=False)
-        radecs = SkyCoord(ra=phi * u.rad, dec=(0.5 * np.pi - theta) * u.rad)
 
         ras, decs = hp.pixelfunc.pix2ang(
             self.nside, hp.nest2ring(self.nside, self.pixel_nos), lonlat=True
         )
+
+        radecs = SkyCoord(ra=ras * u.deg, dec=decs * u.deg)
 
         coverage_data = []
 

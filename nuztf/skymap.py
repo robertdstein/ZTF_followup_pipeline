@@ -86,7 +86,6 @@ class Skymap:
 
         self.pixel_threshold = self.find_pixel_threshold(self.data[self.key])
 
-    #
     # def get_grb_skymap(self, event: str):
     #     """ """
     #     if event is None:

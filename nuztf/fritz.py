@@ -13,6 +13,14 @@ fritz_token = load_credentials("fritz", token_based=True)
 
 
 def fritz_api(method: str, endpoint_extension: str, data: dict = None):
+    """
+    Make a request to the Fritz API
+
+    :param method: Method to use
+    :param endpoint_extension: Endpoint extension (e.g. "api/sources")
+    :param data: Data to send (e.g. {"ra": 0, "dec": 0})
+    :return:
+    """
     headers = {"Authorization": f"token {fritz_token}"}
     endpoint = os.path.join(API_BASEURL, endpoint_extension)
     if method in ["post", "POST"]:
